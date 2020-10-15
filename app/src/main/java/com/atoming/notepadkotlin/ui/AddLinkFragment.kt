@@ -1,0 +1,125 @@
+package com.atoming.notepadkotlin.ui
+
+import android.os.Bundle
+import android.text.Editable
+import android.text.Html
+import android.text.TextWatcher
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.URLUtil
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
+import androidx.cardview.widget.CardView
+import androidx.core.widget.ContentLoadingProgressBar
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.atoming.notepadkotlin.R
+import com.atoming.notepadkotlin.models.MetaResponse
+import com.atoming.notepadkotlin.models.getResponse
+import com.bumptech.glide.Glide
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.android.synthetic.main.add_link_layout.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class AddLinkFragment : Fragment() {
+
+    private val LOG_TAG = AddLinkFragment::class.simpleName
+    private lateinit var editLink: TextInputEditText
+    private lateinit var titleText: TextView
+    private lateinit var imageLink: ImageView
+    private lateinit var descriptionText: TextView
+    private lateinit var linkUrl: TextView
+    private lateinit var linkCard: CardView
+    private lateinit var progress: ProgressBar
+    private lateinit var fab: FloatingActionButton
+
+    private var url: String = ""
+
+    private var metaResponse: MetaResponse = MetaResponse()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val v: View = inflater.inflate(R.layout.add_link_layout, container, false).apply {
+            //initializing views here
+            editLink = findViewById(R.id.edit_link)
+            titleText = findViewById(R.id.link_title)
+            imageLink = findViewById(R.id.image_link)
+            descriptionText = findViewById(R.id.link_description)
+            linkUrl = findViewById(R.id.link_urlText)
+            linkCard = findViewById(R.id.link_card)
+            progress = findViewById(R.id.progress_circular)
+            fab = findViewById(R.id.floatingActionButton)
+        }
+
+        editLink.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                url = editLink.text.toString()
+                progress.visibility = View.VISIBLE
+                if (URLUtil.isValidUrl(url)) {
+                    progress.visibility = View.GONE
+                    linkCard.visibility = View.VISIBLE
+                    val coroutineScope = CoroutineScope(Dispatchers.Main)
+                    coroutineScope.launch {
+                        setValues()
+                    }
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+
+                url = editLink.text.toString()
+                if (URLUtil.isValidUrl(url)) {
+                    progress.visibility = View.GONE
+                    linkCard.visibility = View.VISIBLE
+                    val coroutineScope = CoroutineScope(Dispatchers.Main)
+                    coroutineScope.launch {
+                        setValues()
+                    }
+                } else {
+                    Toast.makeText(activity, "Not a valid URL!", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+        fab.setOnClickListener {
+            this.findNavController().navigate(R.id.action_addLinkFragment_to_allNotesFragment)
+        }
+        return v
+    }
+
+    suspend fun fetchDocument(url: String) = withContext(Dispatchers.IO) {
+        metaResponse = getResponse(url)
+    }
+
+    suspend fun setValues() {
+        fetchDocument(url)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            metaResponse.description.let {
+                descriptionText.text = Html.fromHtml(it, Html.FROM_HTML_MODE_COMPACT)
+                Log.d(LOG_TAG, "DESCRIPTION IS $it")
+            }
+            metaResponse.title.let {
+                titleText.text = it
+            }
+            val imageUrl = metaResponse.image
+            if (!imageUrl.isEmpty()) {
+                imageLink.visibility = View.VISIBLE
+                Glide.with(this).load(imageUrl).into(imageLink)
+            }
+            linkUrl.text = metaResponse.urlLink
+        }
+    }
+}

@@ -1,6 +1,7 @@
 package com.atoming.notepadkotlin.models
 
 import android.webkit.URLUtil
+import androidx.room.PrimaryKey
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -117,5 +118,7 @@ data class MetaResponse(
     var image: String = "",
     var description: String = "",
     var urlLink: String = "",
-    var siteName: String = ""
+    var siteName: String = "",
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0
 )

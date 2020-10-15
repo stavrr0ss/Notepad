@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/allNotesFragment">
+
+    <fragment
+        android:id="@+id/allNotesFragment"
+        android:name="com.atoming.notepadkotlin.ui.AllNotesFragment"
+        android:label="AllNotesFragment">
+        <action
+            android:id="@+id/action_allNotesFragment_to_addLinkFragment"
+            app:destination="@id/addLinkFragment"
+            app:popUpTo="@id/addLinkFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/addLinkFragment"
+        android:name="com.atoming.notepadkotlin.ui.AddLinkFragment"
+        android:label="AddLinkFragment">
+        <action
+            android:id="@+id/action_addLinkFragment_to_allNotesFragment"
+            app:destination="@id/allNotesFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popUpTo="@id/allNotesFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>
