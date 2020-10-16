@@ -16,10 +16,12 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.core.widget.ContentLoadingProgressBar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.atoming.notepadkotlin.R
 import com.atoming.notepadkotlin.models.MetaResponse
-import com.atoming.notepadkotlin.models.getResponse
+import com.atoming.notepadkotlin.viewmodels.AddLinkFactoryModel
+import com.atoming.notepadkotlin.viewmodels.AddLinkViewModel
 import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
@@ -44,6 +46,7 @@ class AddLinkFragment : Fragment() {
     private var url: String = ""
 
     private var metaResponse: MetaResponse = MetaResponse()
+    private lateinit var linkViewModel: AddLinkViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,23 +75,21 @@ class AddLinkFragment : Fragment() {
                 if (URLUtil.isValidUrl(url)) {
                     progress.visibility = View.GONE
                     linkCard.visibility = View.VISIBLE
-                    val coroutineScope = CoroutineScope(Dispatchers.Main)
-                    coroutineScope.launch {
-                        setValues()
-                    }
                 }
             }
 
             override fun afterTextChanged(p0: Editable?) {
-
                 url = editLink.text.toString()
                 if (URLUtil.isValidUrl(url)) {
                     progress.visibility = View.GONE
                     linkCard.visibility = View.VISIBLE
-                    val coroutineScope = CoroutineScope(Dispatchers.Main)
-                    coroutineScope.launch {
-                        setValues()
-                    }
+                    val factory = AddLinkFactoryModel(activity!!.application, url)
+                    linkViewModel = factory.create(AddLinkViewModel::class.java)
+                    //linkViewModel.setLinkResponse(url)
+                    linkViewModel.getResponse().observe(viewLifecycleOwner, {
+                        setValues(it)
+                    })
+
                 } else {
                     Toast.makeText(activity, "Not a valid URL!", Toast.LENGTH_SHORT).show()
                 }
@@ -100,12 +101,9 @@ class AddLinkFragment : Fragment() {
         return v
     }
 
-    suspend fun fetchDocument(url: String) = withContext(Dispatchers.IO) {
-        metaResponse = getResponse(url)
-    }
 
-    suspend fun setValues() {
-        fetchDocument(url)
+    fun setValues(metaResponse: MetaResponse) {
+        //fetchDocument(url)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             metaResponse.description.let {
                 descriptionText.text = Html.fromHtml(it, Html.FROM_HTML_MODE_COMPACT)

@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.atoming.notepadkotlin.R
 import com.atoming.notepadkotlin.models.MetaResponse
 import com.atoming.notepadkotlin.models.Note
-import com.atoming.notepadkotlin.models.getResponse
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
