@@ -1,5 +1,6 @@
 package com.atoming.notepadkotlin.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -26,10 +27,17 @@ class AllNotesFragment : Fragment() {
             recyclerView = findViewById(R.id.all_notes_rv)
             addBtn = findViewById(R.id.add_note_btn)
         }
+        val intent = activity!!.intent
+        if (intent.type.equals("text/plain")) {
+            val urlPassed = intent.getStringExtra(Intent.EXTRA_TEXT)
+            this.findNavController().navigate(
+                AllNotesFragmentDirections.actionAllNotesFragmentToAddLinkFragment(urlPassed)
+            )
+        }
         addBtn.setOnClickListener {
             this.findNavController().navigate(R.id.action_allNotesFragment_to_addLinkFragment)
         }
-        //recyclerView = v.findViewById(R.id.all_notes_rv)
+
         return v
     }
 }

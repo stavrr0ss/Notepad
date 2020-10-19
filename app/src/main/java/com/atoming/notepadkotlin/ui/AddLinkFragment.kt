@@ -19,12 +19,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.atoming.notepadkotlin.R
+import com.atoming.notepadkotlin.models.DbObject
 import com.atoming.notepadkotlin.models.MetaResponse
 import com.atoming.notepadkotlin.viewmodels.AddLinkFactoryModel
 import com.atoming.notepadkotlin.viewmodels.AddLinkViewModel
-import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.add_link_layout.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +65,17 @@ class AddLinkFragment : Fragment() {
             progress = findViewById(R.id.progress_circular)
             fab = findViewById(R.id.floatingActionButton)
         }
+        val urlArg: String? = arguments?.let { AddLinkFragmentArgs.fromBundle(it).urlTextArguments }
+        if (urlArg != null) {
+            val factory = AddLinkFactoryModel(activity!!.application, urlArg)
+            linkViewModel = factory.create(AddLinkViewModel::class.java)
+            editLink.setText(urlArg)
+            linkCard.visibility = View.VISIBLE
+            linkViewModel.getResponse().observe(viewLifecycleOwner, {
+                setValues(it)
+                metaResponse = it
+            })
+        }
 
         editLink.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -72,35 +84,51 @@ class AddLinkFragment : Fragment() {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 url = editLink.text.toString()
                 progress.visibility = View.VISIBLE
-                if (URLUtil.isValidUrl(url)) {
-                    progress.visibility = View.GONE
-                    linkCard.visibility = View.VISIBLE
-                }
+
             }
 
             override fun afterTextChanged(p0: Editable?) {
                 url = editLink.text.toString()
                 if (URLUtil.isValidUrl(url)) {
-                    progress.visibility = View.GONE
-                    linkCard.visibility = View.VISIBLE
-                    val factory = AddLinkFactoryModel(activity!!.application, url)
-                    linkViewModel = factory.create(AddLinkViewModel::class.java)
-                    //linkViewModel.setLinkResponse(url)
-                    linkViewModel.getResponse().observe(viewLifecycleOwner, {
-                        setValues(it)
-                    })
-
+                    if (urlArg == null) { // check if url comes from outside app or pasted in edit field
+                        progress.visibility = View.GONE
+                        linkCard.visibility = View.VISIBLE
+                        val factory = AddLinkFactoryModel(activity!!.application, url)
+                        linkViewModel = factory.create(AddLinkViewModel::class.java)
+                        linkViewModel.getResponse().observe(viewLifecycleOwner, {
+                            setValues(it)
+                            metaResponse = it
+                        })
+                    } else {
+                        linkViewModel.getResponse().observe(viewLifecycleOwner, {
+                            setValues(it)
+                        })
+                    }
                 } else {
                     Toast.makeText(activity, "Not a valid URL!", Toast.LENGTH_SHORT).show()
                 }
             }
         })
         fab.setOnClickListener {
+            var metaList: MutableList<MetaResponse> = mutableListOf<MetaResponse>()
+            var response = MetaResponse(
+                metaResponse.title,
+                metaResponse.image,
+                metaResponse.description,
+                metaResponse.urlLink,
+                metaResponse.siteName
+            )
+            metaList.add(response)
+            val dbObject = DbObject(0, null, null, metaList)
+            if (metaResponse.description.isEmpty()) {
+                //something hapens here
+            } else {
+                linkViewModel.insertNote(dbObject)
+            }
             this.findNavController().navigate(R.id.action_addLinkFragment_to_allNotesFragment)
         }
         return v
     }
-
 
     fun setValues(metaResponse: MetaResponse) {
         //fetchDocument(url)
@@ -115,7 +143,8 @@ class AddLinkFragment : Fragment() {
             val imageUrl = metaResponse.image
             if (!imageUrl.isEmpty()) {
                 imageLink.visibility = View.VISIBLE
-                Glide.with(this).load(imageUrl).into(imageLink)
+                Picasso.get().load(imageUrl).into(imageLink)
+                //Glide.with(this).load(imageUrl).into(imageLink)
             }
             linkUrl.text = metaResponse.urlLink
         }

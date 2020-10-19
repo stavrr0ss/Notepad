@@ -5,6 +5,7 @@ import android.webkit.URLUtil
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.atoming.notepadkotlin.models.DbObject
 import com.atoming.notepadkotlin.models.MetaResponse
 import com.atoming.notepadkotlin.repository.NotepadRepository
 import kotlinx.coroutines.*
@@ -23,13 +24,19 @@ class AddLinkViewModel(application: Application, val url: String) : AndroidViewM
     private var _metaResponse = MutableLiveData<MetaResponse>()
 
     init {
-        mRepository = NotepadRepository(application, url)
+        mRepository = NotepadRepository(application.applicationContext)
         getLinkResponse(url)
     }
 
     private fun getLinkResponse(url: String) {
         coroutinScope.launch {
             _metaResponse.value = mRepository.getResponse(url)
+        }
+    }
+
+    fun insertNote(dbObject: DbObject) {
+        coroutinScope.launch {
+            mRepository.insertNote(dbObject)
         }
     }
 

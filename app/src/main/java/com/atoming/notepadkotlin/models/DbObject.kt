@@ -4,17 +4,20 @@ import androidx.annotation.Nullable
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
+import com.atoming.notepadkotlin.database.Converters
 
 @Entity(tableName = "dbObject")
 data class DbObject(
     @PrimaryKey(autoGenerate = true) var id: Int = 0,
-    @Embedded
     @Nullable
-    var tasks: List<Task>,
-    @Embedded
+    @TypeConverters(Converters::class)
+    var tasks: List<Task>?,
     @Nullable
-    var note: Note,
     @Embedded
+    var note: Note?,
     @Nullable
-    var links: List<MetaResponse>
+    @TypeConverters(Converters::class)
+    var links: List<MetaResponse>?
+
 )

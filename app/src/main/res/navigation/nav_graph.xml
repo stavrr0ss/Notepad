@@ -25,5 +25,9 @@
             app:exitAnim="@anim/fragment_close_exit"
             app:popUpTo="@id/allNotesFragment"
             app:popUpToInclusive="true" />
+        <argument
+            android:name="urlTextArguments"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
 </navigation>

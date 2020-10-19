@@ -5,6 +5,9 @@ import android.util.Log
 import android.webkit.URLUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.atoming.notepadkotlin.database.AppDatabase
+import com.atoming.notepadkotlin.database.MyDao
+import com.atoming.notepadkotlin.models.DbObject
 import com.atoming.notepadkotlin.models.MetaResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,12 +18,23 @@ import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 
-class NotepadRepository(val context: Context, val url: String) {
+class NotepadRepository(context: Context) {
 
-    val _metaResponse = MutableLiveData<MetaResponse>()
+    val myDao: MyDao
+
+    init {
+        myDao = AppDatabase.getDatabase(context).mDao
+    }
+
+    val getNotes: LiveData<List<DbObject>> = myDao.getAllNotesByDate()
+
+    suspend fun insertNote(dbObject: DbObject) {
+        myDao.insertObject(dbObject)
+    }
+
 
     // code copied and adapted from an nonfunctional library
-// "https://github.com/ponnamkarthik/RichLinkPreview/blob/master/richlinkpreview/src/main/java/io/github/ponnamkarthik/richlinkpreview/RichPreview.java"
+    // "https://github.com/ponnamkarthik/RichLinkPreview/blob/master/richlinkpreview/src/main/java/io/github/ponnamkarthik/richlinkpreview/RichPreview.java"
     suspend fun getResponse(url: String): MetaResponse {
         val metaData: MetaResponse = MetaResponse()
         withContext(Dispatchers.IO) {

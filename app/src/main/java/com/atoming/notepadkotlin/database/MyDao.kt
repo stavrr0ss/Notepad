@@ -1,6 +1,22 @@
 package com.atoming.notepadkotlin.database
 
-import androidx.room.Dao
+import androidx.lifecycle.LiveData
+import androidx.room.*
+import com.atoming.notepadkotlin.models.DbObject
 
 @Dao
-interface MyDao
+interface MyDao {
+
+    @Insert
+    suspend fun insertObject(savedObject: DbObject)
+
+    @Query("SELECT * FROM dbObject")
+    fun getAllNotesByDate(): LiveData<List<DbObject>>
+
+    @Delete
+    fun deleteNote(dbObject: DbObject)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateNote(dbObject: DbObject)
+
+}

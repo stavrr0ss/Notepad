@@ -2,12 +2,13 @@ package com.atoming.notepadkotlin.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
+import com.atoming.notepadkotlin.database.Converters
 
-@Entity(tableName = "Tasks")
+
 data class Task(
     var text: String,
-    var postedAt: Long,
-    var color: Int,
     @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
+    var taskId: Int = 0
 )
