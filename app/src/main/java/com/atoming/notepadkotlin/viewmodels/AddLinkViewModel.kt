@@ -16,7 +16,7 @@ import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 
-class AddLinkViewModel(application: Application, val url: String) : AndroidViewModel(application) {
+class AddLinkViewModel(application: Application) : AndroidViewModel(application) {
 
     private val mRepository: NotepadRepository
     private var viewmodelJob = Job()
@@ -25,10 +25,10 @@ class AddLinkViewModel(application: Application, val url: String) : AndroidViewM
 
     init {
         mRepository = NotepadRepository(application.applicationContext)
-        getLinkResponse(url)
+        //getLinkResponse(url)
     }
 
-    private fun getLinkResponse(url: String) {
+    fun getLinkResponse(url: String) {
         coroutinScope.launch {
             _metaResponse.value = mRepository.getResponse(url)
         }

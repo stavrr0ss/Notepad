@@ -64,17 +64,19 @@ class AddLinkFragment : Fragment() {
             linkCard = findViewById(R.id.link_card)
             progress = findViewById(R.id.progress_circular)
             fab = findViewById(R.id.floatingActionButton)
+            val factory = AddLinkFactoryModel(activity!!.application)
+            linkViewModel = factory.create(AddLinkViewModel::class.java)
         }
+        linkViewModel.getResponse().observe(viewLifecycleOwner, {
+            setValues(it)
+            metaResponse = it
+        })
         val urlArg: String? = arguments?.let { AddLinkFragmentArgs.fromBundle(it).urlTextArguments }
         if (urlArg != null) {
-            val factory = AddLinkFactoryModel(activity!!.application, urlArg)
-            linkViewModel = factory.create(AddLinkViewModel::class.java)
             editLink.setText(urlArg)
             linkCard.visibility = View.VISIBLE
-            linkViewModel.getResponse().observe(viewLifecycleOwner, {
-                setValues(it)
-                metaResponse = it
-            })
+            linkViewModel.getLinkResponse(urlArg)
+
         }
 
         editLink.addTextChangedListener(object : TextWatcher {
@@ -93,16 +95,15 @@ class AddLinkFragment : Fragment() {
                     if (urlArg == null) { // check if url comes from outside app or pasted in edit field
                         progress.visibility = View.GONE
                         linkCard.visibility = View.VISIBLE
-                        val factory = AddLinkFactoryModel(activity!!.application, url)
-                        linkViewModel = factory.create(AddLinkViewModel::class.java)
-                        linkViewModel.getResponse().observe(viewLifecycleOwner, {
-                            setValues(it)
-                            metaResponse = it
-                        })
+                        linkViewModel.getLinkResponse(url)
+                        //linkViewModel.getResponse().observe(viewLifecycleOwner, {
+                        //    setValues(it)
+                        //    metaResponse = it
+                        // })
                     } else {
-                        linkViewModel.getResponse().observe(viewLifecycleOwner, {
-                            setValues(it)
-                        })
+                        //linkViewModel.getResponse().observe(viewLifecycleOwner, {
+                        //    setValues(it)
+                        //})
                     }
                 } else {
                     Toast.makeText(activity, "Not a valid URL!", Toast.LENGTH_SHORT).show()
